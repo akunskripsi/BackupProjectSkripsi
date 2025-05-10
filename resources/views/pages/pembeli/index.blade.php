@@ -1,27 +1,27 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- notifikasi berhasil dan eror -->
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-@endif
-@if (session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-@endif
+    <!-- notifikasi berhasil dan eror -->
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Data Pembeli</h1>
-        <a href="/pembeli/create" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+        <a href="/pembeli/create" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm"><i
                 class="fas fa-plus fa-sm text-white-50"></i> Tambah</a>
     </div>
 
@@ -35,7 +35,7 @@
                             <input type="text" name="search" class="form-control"
                                 placeholder="Cari nama, email, atau lokasi..." value="{{ request('search') }}">
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="submit">
+                                <button class="btn btn-success" type="submit">
                                     <i class="fas fa-search"></i> Cari
                                 </button>
                             </div>
@@ -49,9 +49,9 @@
                     @endif
 
 
-                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 900px; overflow-y: auto;">
                         <table class="table table-bordered table-hover table-striped">
-                            <thead class="table-dark sticky-top">
+                            <thead class="bg-warning text-white sticky-top">
                                 <tr>
                                     <th>No</th>
                                     <th>Kode Pembeli</th>

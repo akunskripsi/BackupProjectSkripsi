@@ -22,7 +22,7 @@
     <link rel="icon" href="{{ asset('template/img/ICON-TAB.png') }}" type="image/jpeg">
 </head>
 
-<body class="bg-gradient-dark">
+<body class="bg-warning">
 
     <div class="container">
 
@@ -63,7 +63,7 @@
                                                     Me</label>
                                             </div>
                                         </div> --}}
-                                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                                        <button type="submit" class="btn btn-danger btn-user btn-block">
                                             Login
                                         </button>
                                         {{-- <hr> --}}

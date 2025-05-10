@@ -21,7 +21,7 @@
 
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Data Rating</h1>
-        <a href="/rating/create" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <a href="/rating/create" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
             <i class="fas fa-plus fa-sm text-white-50"></i> Tambah
         </a>
     </div>
@@ -35,7 +35,7 @@
                             <input type="text" name="search" class="form-control" placeholder="Cari Pembeli..."
                                 value="{{ request('search') }}">
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="submit">
+                                <button class="btn btn-success" type="submit">
                                     <i class="fas fa-search"></i> Cari
                                 </button>
                             </div>
@@ -44,7 +44,7 @@
 
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover align-middle text-nowrap">
-                            <thead class="bg-dark text-white">
+                            <thead class="bg-warning text-white">
                                 <tr>
                                     <th>No</th>
                                     <th>Nama Pembeli</th>
@@ -136,7 +136,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        <button type="submit" class="btn btn-danger">Simpan</button>
                     </div>
                 </div>
             </form>

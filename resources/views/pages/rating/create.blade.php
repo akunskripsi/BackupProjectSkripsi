@@ -66,7 +66,7 @@
                             <a href="/rating" class="btn btn-outline-secondary">
                                 Kembali
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-danger">
                                 Simpan
                             </button>
                         </div>

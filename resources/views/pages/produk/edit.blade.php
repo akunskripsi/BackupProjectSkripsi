@@ -61,7 +61,7 @@
                             <a href="/produk" class="btn btn-outline-secondary">
                                 Kembali
                             </a>
-                            <button type="submit" class="btn btn-warning">
+                            <button type="submit" class="btn btn-danger">
                                 Simpan Perubahan
                             </button>
                         </div>
