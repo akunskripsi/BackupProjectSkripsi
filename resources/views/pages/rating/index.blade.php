@@ -42,6 +42,15 @@
                         </div>
                     </form>
 
+                    {{-- Notifikasi hasil pencarian --}}
+                    @if (request('search'))
+                        <div class="alert alert-info">
+                            Ditemukan {{ count($pembelis) }} pembeli untuk pencarian:
+                            <strong>{{ request('search') }}</strong>
+                        </div>
+                    @endif
+
+
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover align-middle text-nowrap">
                             <thead class="bg-warning text-white">
@@ -85,7 +94,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ 2 + count($produks) }}" class="text-start">
+                                        <td colspan="{{ 2 + count($produks) }}" style="text-align: left;">
                                             Tidak ada data rating ditemukan.
                                         </td>
                                     </tr>

@@ -35,7 +35,7 @@
 
                         <h5 class="mt-4">Daftar Hasil Rekomendasi</h5>
                         <table class="table table-bordered table-hovered">
-                            <thead class="bg-warning text-white sticky-top">
+                            <thead class="bg-success text-white sticky-top">
                                 <tr>
                                     <th>No</th>
                                     <th>Kode Produk</th>
@@ -62,7 +62,7 @@
                         <h5 class="mt-4">Daftar Pembeli yang Mirip (Cosine Similarity)</h5>
                         <div style="max-height: 400px; overflow-y: auto;"> <!-- Fitur Scroll -->
                             <table class="table table-bordered">
-                                <thead class="bg-warning text-white sticky-top">
+                                <thead class="bg-danger text-white sticky-top">
                                     <tr>
                                         <th>No</th>
                                         <th>Kode Pembeli</th>
