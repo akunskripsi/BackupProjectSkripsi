@@ -68,6 +68,7 @@
                                         <th>Kode Pembeli</th>
                                         <th>Nama Pembeli</th>
                                         <th>Skor Cosine Similarity</th>
+                                        <th>Aksi</th> {{-- Tambahkan ini --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -77,6 +78,12 @@
                                             <td>{{ $sim->kode }}</td>
                                             <td>{{ $sim->nama }}</td>
                                             <td>{{ $sim->similarity }}</td>
+                                            <td>
+                                                <a href="{{ route('rekomendasi.show', ['id' => $sim->pembeli_id]) }}"
+                                                    class="btn btn-sm btn-info">
+                                                    Show
+                                                </a>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

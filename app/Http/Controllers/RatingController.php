@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Validator;
+use App\Imports\RatingImport;
 use App\Models\Rating;
 use App\Models\Pembeli;
 use App\Models\Produk;
@@ -22,6 +25,7 @@ class RatingController extends Controller
             ->join('pembelis', 'ratings.pembeli_id', '=', 'pembelis.id')
             ->join('produks', 'ratings.produk_id', '=', 'produks.id')
             ->select(
+                'ratings.id',
                 'ratings.pembeli_id',
                 'ratings.produk_id',
                 'ratings.rating',
@@ -135,5 +139,19 @@ class RatingController extends Controller
         $pembeli->delete();
 
         return redirect()->back()->with('success', 'Data berhasil dihapus.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv',
+        ]);
+
+        try {
+            Excel::import(new RatingImport, $request->file('file'));
+            return redirect('/rating')->with('success', 'Data rating berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect('/rating')->with('error', 'Gagal import: ' . $e->getMessage());
+        }
     }
 }

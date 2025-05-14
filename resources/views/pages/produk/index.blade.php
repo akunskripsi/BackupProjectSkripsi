@@ -20,9 +20,23 @@
     @endif
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Data Produk</h1>
-        <a href="/produk/create" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm"><i
-                class="fas fa-plus fa-sm text-white-50"></i> Tambah</a>
+        <h1 class="h3 text-gray-800">Data Produk</h1>
+        <div class="d-flex align-items-center">
+            <form action="{{ url('/produk/import') }}" method="POST" enctype="multipart/form-data"
+                class="mr-2 d-flex flex-column align-items-start">
+                @csrf
+                <div class="d-flex align-items-center">
+                    <input type="file" name="file" class="form-control-file mr-2" accept=".csv,.xlsx" required>
+                    <button type="submit" class="btn btn-sm btn-primary mr-2">
+                        <i class="fas fa-file-import"></i> Import
+                    </button>
+                </div>
+                <small class="text-muted">* Format file: .csv atau .xlsx</small>
+            </form>
+            <a href="/produk/create" class="btn btn-sm btn-danger shadow-sm ml-2">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Tambah
+            </a>
+        </div>
     </div>
 
     {{-- Tables --}}
@@ -51,7 +65,7 @@
 
                     <div class="table-responsive" style="max-height: 900px; overflow-y: auto;">
                         <table class="table table-bordered table-hover table-striped">
-                            <thead class="bg-warning text-white sticky-top">
+                            <thead class="bg-primary text-white sticky-top">
                                 <tr>
                                     <th>No</th>
                                     <th>Kode Produk</th>
@@ -78,8 +92,7 @@
                                             <td>{{ $item->kode_produk }}</td>
                                             <td>{{ $item->nama_produk }}</td>
                                             <td>{{ $item->kategori }}</td>
-                                            <td>Rp. {{ number_format($item->harga, 0, ',', '.') }}</td>
-                                            <td>{{ $item->stok }}</td>
+                                            <td>Rp. {{ number_format(floatval($item->harga), 0, ',', '.') }}</td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a href="/produk/{{ $item->id }}"

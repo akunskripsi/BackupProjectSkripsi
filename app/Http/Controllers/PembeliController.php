@@ -2,28 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Validator;
+use App\Imports\PembeliImport;
 use App\Models\Pembeli;
 use Illuminate\Http\Request;
 
 class PembeliController extends Controller
 {
     public function index(Request $request)
-{
-    $query = Pembeli::query();
+    {
+        $query = Pembeli::query();
 
-    if ($request->has('search')) {
-        $search = $request->search;
-        $query->where('name', 'like', '%' . $search . '%')
-              ->orWhere('email', 'like', '%' . $search . '%')
-              ->orWhere('lokasi', 'like', '%' . $search . '%');
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', '%' . $search . '%')
+                ->orWhere('email', 'like', '%' . $search . '%')
+                ->orWhere('lokasi', 'like', '%' . $search . '%');
+        }
+
+        $pembelis = $query->get();
+
+        return view('pages.pembeli.index', [
+            'pembeli' => $pembelis,
+        ]);
     }
-
-    $pembelis = $query->get();
-
-    return view('pages.pembeli.index', [
-        'pembeli' => $pembelis,
-    ]);
-}
 
     public function create()
     {
@@ -65,31 +68,44 @@ class PembeliController extends Controller
     public function edit($id)
     {
         $pembeli = Pembeli::findOrFail($id);
-        
-        return view('pages.pembeli.edit',[
+
+        return view('pages.pembeli.edit', [
             'pembeli' => $pembeli,
         ]);
     }
 
-    public function update(Request $request , $id)
+    public function update(Request $request, $id)
     {
-        $validatedData=$request->validate([
-            'name' => ['required','max:100'],
-            'email' => ['required','max:50'],
-            'lokasi' => ['required','max:20'],
+        $validatedData = $request->validate([
+            'name' => ['required', 'max:100'],
+            'email' => ['required', 'max:50'],
+            'lokasi' => ['required', 'max:20'],
         ]);
 
         Pembeli::findOrFail($id)->update($validatedData);
 
-        return redirect('/pembeli')->with('success','Berhasil mengubah data');
+        return redirect('/pembeli')->with('success', 'Berhasil mengubah data');
     }
 
     public function destroy($id)
     {
         $pembeli = Pembeli::findOrFail($id);
         $pembeli->delete();
-        
-        return redirect('/pembeli')->with('success','Berhasil menghapus data');
+
+        return redirect('/pembeli')->with('success', 'Berhasil menghapus data');
     }
-    
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv',
+        ]);
+
+        try {
+            Excel::import(new PembeliImport, $request->file('file'));
+            return redirect('/pembeli')->with('success', 'Data Pembeli berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect('/pembeli')->with('error', 'Gagal import: ' . $e->getMessage());
+        }
+    }
 }

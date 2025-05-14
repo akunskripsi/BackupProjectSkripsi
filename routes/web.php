@@ -25,6 +25,7 @@ Route::post('/pembeli', [PembeliController::class, 'store'])->middleware(\App\Ht
 Route::get('/pembeli/{id}', [PembeliController::class, 'edit'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::put('/pembeli/{id}', [PembeliController::class, 'update'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::delete('/pembeli/{id}', [PembeliController::class, 'destroy'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
+Route::post('/pembeli/import', [PembeliController::class, 'import'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 
 Route::get('/produk', [ProdukController::class, 'index'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::get('/produk/create', [ProdukController::class, 'create'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
@@ -32,6 +33,7 @@ Route::post('/produk', [ProdukController::class, 'store'])->middleware(\App\Http
 Route::get('/produk/{id}', [ProdukController::class, 'edit'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::put('/produk/{id}', [ProdukController::class, 'update'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
+Route::post('/produk/import', [ProdukController::class, 'import'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 
 Route::get('/rating', [RatingController::class, 'index'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::get('/rating/create', [RatingController::class, 'create'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
@@ -39,6 +41,7 @@ Route::post('/rating', [RatingController::class, 'store'])->middleware(\App\Http
 Route::get('/rating/{id}', [RatingController::class, 'edit'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::put('/rating/{id}', [RatingController::class, 'update'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::delete('/rating/{id}', [RatingController::class, 'destroy'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
+Route::post('/rating/import', [RatingController::class, 'import'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 
 Route::get('/rekomendasi', [RekomendasiController::class, 'index'])
     ->middleware(\App\Http\Middleware\RoleMiddleware::class)
@@ -48,3 +51,4 @@ Route::post('/rekomendasi', [RekomendasiController::class, 'store'])->middleware
 Route::get('/rekomendasi/{id}', [RekomendasiController::class, 'edit'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::put('/rekomendasi/{id}', [RekomendasiController::class, 'update'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::delete('/rekomendasi/{id}', [RekomendasiController::class, 'destroy'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
+Route::get('/rekomendasi/show/{id}', [RekomendasiController::class, 'show'])->name('rekomendasi.show')->middleware(\App\Http\Middleware\RoleMiddleware::class);

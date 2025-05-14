@@ -33,6 +33,8 @@ class RekomendasiController extends Controller
         $similarUsers = collect(); // Untuk daftar pembeli mirip dan skor
 
         if ($request->has('pembeli_id') && $request->pembeli_id != '') {
+            session(['selected_user' => $request->pembeli_id]);
+
             // Ambil rating semua pembeli
             $ratings = Rating::all();
             $ratingMatrix = [];
@@ -148,6 +150,62 @@ class RekomendasiController extends Controller
         return $dotProduct / (sqrt($magnitudeA) * sqrt($magnitudeB));
     }
 
+    public function show($id)
+    {
+        $pembeliTerpilih = session('selected_user');
+
+        $targetUserId = $id;
+
+        // Ambil semua rating
+        $ratings = Rating::all();
+        $ratingMatrix = [];
+
+        foreach ($ratings as $rating) {
+            $ratingMatrix[$rating->pembeli_id][$rating->produk_id] = $rating->rating;
+        }
+
+        if (!$pembeliTerpilih) {
+            return redirect()->route('rekomendasi.index')->with('warning', 'Silakan pilih pembeli terlebih dahulu.');
+        }
+
+        $vecA = $ratingMatrix[$pembeliTerpilih];
+        $vecB = $ratingMatrix[$targetUserId];
+
+        $dotProduct = 0;
+        $magnitudeA = 0;
+        $magnitudeB = 0;
+        $details = [];
+
+        $allKeys = array_unique(array_merge(array_keys($vecA), array_keys($vecB)));
+
+        foreach ($allKeys as $key) {
+            $a = $vecA[$key] ?? 0;
+            $b = $vecB[$key] ?? 0;
+            $dotProduct += $a * $b;
+            $magnitudeA += $a ** 2;
+            $magnitudeB += $b ** 2;
+
+            $details[] = [
+                'produk_id' => $key,
+                'rating_A' => $a,
+                'rating_B' => $b,
+                'a_x_b' => $a * $b
+            ];
+        }
+
+        $similarity = 0;
+        if ($magnitudeA != 0 && $magnitudeB != 0) {
+            $similarity = $dotProduct / (sqrt($magnitudeA) * sqrt($magnitudeB));
+        }
+
+        return view('pages.rekomendasi.show', [
+            'details' => $details,
+            'dotProduct' => $dotProduct,
+            'magnitudeA' => sqrt($magnitudeA),
+            'magnitudeB' => sqrt($magnitudeB),
+            'similarity' => $similarity
+        ]);
+    }
 
     public function create()
     {
