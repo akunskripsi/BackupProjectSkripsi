@@ -8,19 +8,20 @@ use App\Models\Rating;
 use App\Models\Pembeli;
 use App\Models\Produk;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache; // Tambahkan
 
 class RekomendasiController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil urutan unik pembeli sesuai urutan kemunculan di tabel rating
+        // Ambil ID pembeli dari Rating untuk dropdown
         $pembeliIds = Rating::select('pembeli_id')
             ->distinct()
-            ->orderBy('id') // urut berdasarkan ID rating (urutan input)
+            ->orderBy('id')
             ->pluck('pembeli_id')
             ->toArray();
 
-        // Ambil data pembeli dengan urutan yang sama seperti rating
+        // Ambil data pembeli sesuai urutan
         $pembelis = Pembeli::whereIn('id', $pembeliIds)
             ->get()
             ->sortBy(function ($p) use ($pembeliIds) {
@@ -30,12 +31,16 @@ class RekomendasiController extends Controller
 
         $produk = Produk::all();
         $rekomendasis = collect();
-        $similarUsers = collect(); // Untuk daftar pembeli mirip dan skor
+        $similarUsers = collect();
+        $selectedUserId = $request->pembeli_id;
 
-        if ($request->has('pembeli_id') && $request->pembeli_id != '') {
-            session(['selected_user' => $request->pembeli_id]);
+        if ($selectedUserId) {
+            session(['selected_user' => $selectedUserId]);
 
-            // Ambil rating semua pembeli
+            // Clear cache untuk pembeli yang dipilih
+            Cache::forget('rekomendasi_user_' . $selectedUserId);
+            Cache::forget('similar_users_' . $selectedUserId);
+
             $ratings = Rating::all();
             $ratingMatrix = [];
 
@@ -43,22 +48,16 @@ class RekomendasiController extends Controller
                 $ratingMatrix[$rating->pembeli_id][$rating->produk_id] = $rating->rating;
             }
 
-            // Ambil pembeli yang dipilih
-            $userId = $request->pembeli_id;
-
-            if (isset($ratingMatrix[$userId])) {
-                [$rekomendasis, $similarUsers] = $this->recommendProducts($userId, $ratingMatrix, $produk);
-            } else {
+            if (!isset($ratingMatrix[$selectedUserId])) {
                 session()->flash('warning', 'Pembeli ini belum memberikan rating.');
+                return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers'));
             }
+
+            // Hitung rekomendasi tanpa cache untuk memastikan data fresh
+            [$rekomendasis, $similarUsers] = $this->recommendProducts($selectedUserId, $ratingMatrix, $produk);
         }
 
-        return view('pages.rekomendasi.index', [
-            'pembelis' => $pembelis,
-            'produk' => $produk,
-            'rekomendasis' => $rekomendasis,
-            'similarUsers' => $similarUsers
-        ]);
+        return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers', 'selectedUserId'));
     }
 
 
@@ -66,47 +65,61 @@ class RekomendasiController extends Controller
     private function recommendProducts($userId, $ratingMatrix, $produks, $topN = 5)
     {
         $similarities = [];
-
         foreach ($ratingMatrix as $otherUserId => $ratings) {
             if ($otherUserId == $userId) continue;
             $similarity = $this->cosineSimilarity($ratingMatrix[$userId], $ratings);
             $similarities[$otherUserId] = $similarity;
         }
 
-        // Simpan daftar pengguna mirip
+        $allPembeli = Pembeli::whereIn('id', array_keys($similarities))->get()->keyBy('id');
+
+        // Similar Users
         $similarUsers = collect();
         foreach ($similarities as $id => $sim) {
-            $pembeli = Pembeli::find($id);
-            $nama = $pembeli?->name ?? 'Tidak Dikenal';
-            $kode = $pembeli?->kode_pembeli ?? '-';
+            $pembeli = $allPembeli[$id] ?? null;
             $similarUsers->push((object)[
                 'pembeli_id' => $id,
-                'kode' => $kode,
-                'nama' => $nama,
+                'kode' => $pembeli?->kode_pembeli ?? '-',
+                'nama' => $pembeli?->name ?? 'Tidak Dikenal',
                 'similarity' => round($sim, 4)
             ]);
         }
 
-        // Urutkan berdasarkan similarity terbesar
         $similarUsers = $similarUsers->sortByDesc('similarity');
+        //Jika hasil similarUsers semuanya 0 (tidak mirip), tampilkan notifikasi
+        if ($similarUsers->where('similarity', '>', 0)->isEmpty()) {
+            session()->flash('warning', 'Tidak ditemukan pembeli yang mirip.');
+        }
 
+        // Produk yang belum dirating
         $userRated = $ratingMatrix[$userId] ?? [];
         $unratedProducts = $produks->filter(fn($p) => !isset($userRated[$p->id]));
 
         $predictions = [];
+
         foreach ($unratedProducts as $produk) {
             $totalSim = 0;
             $weightedSum = 0;
+            $perKontributor = [];
 
             foreach ($similarities as $otherUser => $sim) {
                 if (isset($ratingMatrix[$otherUser][$produk->id])) {
-                    $weightedSum += $sim * $ratingMatrix[$otherUser][$produk->id];
+                    $rating = $ratingMatrix[$otherUser][$produk->id];
+                    $perKontributor[] = [
+                        'pembeli_id' => $otherUser,
+                        'nama' => $allPembeli[$otherUser]?->name ?? '-',
+                        'similarity' => round($sim, 4),
+                        'rating' => $rating,
+                        'contribution' => round($sim * $rating, 4)
+                    ];
+
+                    $weightedSum += $sim * $rating;
                     $totalSim += $sim;
                 }
             }
 
             if ($totalSim > 0) {
-                $predictedRating = round($weightedSum / $totalSim, 2);
+                $predictedRating = $weightedSum / $totalSim;
 
                 if ($predictedRating > 0) {
                     $predictions[] = (object)[
@@ -115,15 +128,27 @@ class RekomendasiController extends Controller
                         'kategori' => $produk->kategori,
                         'harga' => $produk->harga,
                         'predicted_rating' => $predictedRating,
+                        'details' => $perKontributor,
+                        'total_similarity' => round($totalSim, 4),
+                        'total_weighted' => round($weightedSum, 4),
                     ];
                 }
             }
         }
 
         usort($predictions, fn($a, $b) => $b->predicted_rating <=> $a->predicted_rating);
+        $rekomendasi = collect(array_slice($predictions, 0, $topN));
 
-        return [collect(array_slice($predictions, 0, $topN)), $similarUsers];
+        // Tambahkan caching di sini, sebelum return
+        $cacheKey = 'rekomendasi_user_' . $userId;
+        $cacheSimKey = 'similar_users_' . $userId;
+
+        Cache::put($cacheKey, $rekomendasi, now()->addMinutes(10));
+        Cache::put($cacheSimKey, $similarUsers, now()->addMinutes(10));
+
+        return [$rekomendasi, $similarUsers];
     }
+
 
 
 
@@ -185,8 +210,10 @@ class RekomendasiController extends Controller
             $magnitudeA += $a ** 2;
             $magnitudeB += $b ** 2;
 
+            $produk = Produk::find($key);
             $details[] = [
                 'produk_id' => $key,
+                'nama_produk' => $produk?->nama_produk ?? 'Tidak Diketahui',
                 'rating_A' => $a,
                 'rating_B' => $b,
                 'a_x_b' => $a * $b

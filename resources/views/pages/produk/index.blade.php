@@ -63,7 +63,7 @@
                         </div>
                     @endif
 
-                    <div class="table-responsive" style="max-height: 900px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 800px; overflow-y: auto;">
                         <table class="table table-bordered table-hover table-striped">
                             <thead class="bg-primary text-white sticky-top">
                                 <tr>
@@ -93,6 +93,7 @@
                                             <td>{{ $item->nama_produk }}</td>
                                             <td>{{ $item->kategori }}</td>
                                             <td>Rp. {{ number_format(floatval($item->harga), 0, ',', '.') }}</td>
+                                            <td>{{ $item->stok }}</td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a href="/produk/{{ $item->id }}"

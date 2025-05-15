@@ -46,9 +46,4 @@ Route::post('/rating/import', [RatingController::class, 'import'])->middleware(\
 Route::get('/rekomendasi', [RekomendasiController::class, 'index'])
     ->middleware(\App\Http\Middleware\RoleMiddleware::class)
     ->name('rekomendasi.index');
-Route::get('/rekomendasi/create', [RekomendasiController::class, 'create'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
-Route::post('/rekomendasi', [RekomendasiController::class, 'store'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
-Route::get('/rekomendasi/{id}', [RekomendasiController::class, 'edit'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
-Route::put('/rekomendasi/{id}', [RekomendasiController::class, 'update'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
-Route::delete('/rekomendasi/{id}', [RekomendasiController::class, 'destroy'])->middleware(\App\Http\Middleware\RoleMiddleware::class);
 Route::get('/rekomendasi/show/{id}', [RekomendasiController::class, 'show'])->name('rekomendasi.show')->middleware(\App\Http\Middleware\RoleMiddleware::class);

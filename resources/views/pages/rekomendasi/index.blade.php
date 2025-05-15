@@ -26,7 +26,7 @@
                         </div>
                     </form>
 
-                    @if (count($rekomendasis) > 0)
+                    @if (isset($rekomendasis) && count($rekomendasis) > 0)
                         @if (isset($notifikasi))
                             <div class="alert alert-warning">
                                 {{ $notifikasi }}
@@ -34,31 +34,84 @@
                         @endif
 
                         <h5 class="mt-4">Daftar Hasil Rekomendasi</h5>
-                        <table class="table table-bordered table-hovered">
-                            <thead class="bg-success text-white sticky-top">
-                                <tr>
-                                    <th>No</th>
-                                    <th>Kode Produk</th>
-                                    <th>Produk</th>
-                                    <th>Rating Prediksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($rekomendasis as $item)
+                        <div id="accordionPrediksi"> {{-- Pembungkus Accordion --}}
+                            <table class="table table-bordered table-hovered">
+                                <thead class="bg-success text-white sticky-top">
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->kode_produk }}</td>
-                                        <td>{{ $item->nama }}</td>
-                                        <td>{{ $item->predicted_rating }}</td>
+                                        <th>No</th>
+                                        <th>Kode Produk</th>
+                                        <th>Produk</th>
+                                        <th>Rating Prediksi</th>
+                                        <th class="text-center">Detail</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach ($rekomendasis as $item)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $item->kode_produk }}</td>
+                                            <td>{{ $item->nama }}</td>
+                                            <td>{{ number_format($item->predicted_rating, 4) }}</td>
+                                            <td class="text-center">
+                                                <!-- Button untuk collapse detail -->
+                                                <button class="btn btn-sm btn-secondary" type="button"
+                                                    data-toggle="collapse" data-target="#detail-{{ $loop->iteration }}">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="collapse multi-collapse" id="detail-{{ $loop->iteration }}"
+                                            data-parent="#accordionPrediksi">
+                                            <td colspan="5">
+                                                <strong>Perhitungan Prediksi Rating:</strong><br>
+                                                <ul>
+                                                    @foreach ($item->details as $d)
+                                                        <li>
+                                                            {{ $loop->iteration }}. {{ $d['nama'] }} (similarity ×
+                                                            rating):
+                                                            ({{ $d['similarity'] }}
+                                                            × {{ $d['rating'] }})
+                                                            = {{ $d['contribution'] }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                                <p>
+                                                    <strong>Total Weighted Sum =</strong>
+                                                    @php
+                                                        $weightedParts = [];
+                                                        foreach ($item->details as $d) {
+                                                            $weightedParts[] = $d['similarity'] . ' × ' . $d['rating'];
+                                                        }
+                                                    @endphp
+                                                    {{ implode(' + ', $weightedParts) }} = {{ $item->total_weighted }}
+                                                </p>
+                                                <p>
+                                                    <strong>Total Similarity =</strong>
+                                                    @php
+                                                        $similarityParts = [];
+                                                        foreach ($item->details as $d) {
+                                                            $similarityParts[] = $d['similarity'];
+                                                        }
+                                                    @endphp
+                                                    {{ implode(' + ', $similarityParts) }} = {{ $item->total_similarity }}
+                                                </p>
+                                                <p>
+                                                    <strong>Prediksi Rating =</strong>
+                                                    {{ number_format($item->total_weighted, 4) }} ÷
+                                                    {{ number_format($item->total_similarity, 4) }} =
+                                                    {{ number_format($item->predicted_rating, 4) }}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div> {{-- Tutup accordion --}}
                     @else
                         <p class="text-center">Pilih pembeli untuk melihat rekomendasi</p>
                     @endif
 
-                    @if ($similarUsers->count() > 0)
+                    @if (isset($similarUsers) && $similarUsers->count() > 0)
                         <h5 class="mt-4">Daftar Pembeli yang Mirip (Cosine Similarity)</h5>
                         <div style="max-height: 400px; overflow-y: auto;"> <!-- Fitur Scroll -->
                             <table class="table table-bordered">
@@ -68,7 +121,7 @@
                                         <th>Kode Pembeli</th>
                                         <th>Nama Pembeli</th>
                                         <th>Skor Cosine Similarity</th>
-                                        <th>Aksi</th> {{-- Tambahkan ini --}}
+                                        <th class="text-center">Lihat Perhitungan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -78,10 +131,10 @@
                                             <td>{{ $sim->kode }}</td>
                                             <td>{{ $sim->nama }}</td>
                                             <td>{{ $sim->similarity }}</td>
-                                            <td>
+                                            <td class="text-center">
                                                 <a href="{{ route('rekomendasi.show', ['id' => $sim->pembeli_id]) }}"
-                                                    class="btn btn-sm btn-info">
-                                                    Show
+                                                    class="btn btn-secondary btn-sm">
+                                                    <i class="fas fa-eye"></i>
                                                 </a>
                                             </td>
                                         </tr>

@@ -63,7 +63,7 @@
                     @endif
 
 
-                    <div class="table-responsive" style="max-height: 900px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 800px; overflow-y: auto;">
                         <table class="table table-bordered table-hover table-striped">
                             <thead class="bg-primary text-white sticky-top">
                                 <tr>
