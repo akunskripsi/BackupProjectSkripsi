@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -11,29 +10,32 @@
 
     <title>Toko Surya Elektrik - Login</title>
 
-    <!-- Custom fonts for this template-->
+    <!-- Font Awesome -->
     <link href="{{ asset('template/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,700,800,900" rel="stylesheet">
     <link href="{{ asset('template/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="icon" href="{{ asset('template/img/ICON-TAB.png') }}" type="image/jpeg">
+
+    <!-- Tambahan CSS untuk icon -->
+    <style>
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #aaa;
+        }
+    </style>
 </head>
 
 <body class="bg-warning">
 
     <div class="container">
-
-        <!-- Outer Row -->
         <div class="row justify-content-center">
-
             <div class="col-xl-10 col-lg-12 col-md-9">
-
                 <div class="card o-hidden border-0 shadow-lg my-5">
                     <div class="card-body p-0">
-                        <!-- Nested Row within Card Body -->
                         <div class="row">
                             <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center">
                                 <img src="{{ asset('template/img/logo-login.jpg') }}" alt="Login Image"
@@ -48,60 +50,50 @@
                                         @csrf
                                         @method('POST')
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user" id="InputEmail"
-                                                name="email" aria-describedby="emailHelp"
-                                                placeholder="Enter Email Address...">
+                                            <input type="email" class="form-control form-control-user"
+                                                id="InputEmail" name="email" placeholder="Enter Email Address...">
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group position-relative">
                                             <input type="password" class="form-control form-control-user"
                                                 id="InputPassword" name="password" placeholder="Password">
+                                            <span toggle="#InputPassword" class="fas fa-eye toggle-password"></span>
                                         </div>
-                                        {{-- <div class="form-group">
-                                            <div class="custom-control custom-checkbox small">
-                                                <input type="checkbox" class="custom-control-input" id="customCheck">
-                                                <label class="custom-control-label" for="customCheck">Remember
-                                                    Me</label>
-                                            </div>
-                                        </div> --}}
                                         <button type="submit" class="btn btn-danger btn-user btn-block">
                                             Login
                                         </button>
-                                        {{-- <hr> --}}
-                                        {{-- <a href="index.html" class="btn btn-google btn-user btn-block">
-                                            <i class="fab fa-google fa-fw"></i> Login with Google
-                                        </a>
-                                        <a href="index.html" class="btn btn-facebook btn-user btn-block">
-                                            <i class="fab fa-facebook-f fa-fw"></i> Login with Facebook
-                                        </a> --}}
                                     </form>
-                                    {{-- <hr> --}}
-                                    {{-- <div class="text-center">
-                                        <a class="small" href="forgot-password.html">Forgot Password?</a>
-                                    </div>
-                                    <div class="text-center">
-                                        <a class="small" href="register.html">Create an Account!</a>
-                                    </div> --}}
+                                    <!-- Optional: Tambahkan link daftar/lupa password jika dibutuhkan -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
         </div>
-
     </div>
 
-    <!-- Bootstrap core JavaScript-->
+    <!-- JS -->
     <script src="{{ asset('template/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('template/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
-    <!-- Core plugin JavaScript-->
     <script src="{{ asset('template/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-
-    <!-- Custom scripts for all pages-->
     <script src="{{ asset('template/js/sb-admin-2.min.js') }}"></script>
+
+    <!-- Script toggle password -->
+    <script>
+        $(document).ready(function () {
+            $(".toggle-password").click(function () {
+                let input = $($(this).attr("toggle"));
+                let icon = $(this);
+                if (input.attr("type") === "password") {
+                    input.attr("type", "text");
+                    icon.removeClass("fa-eye").addClass("fa-eye-slash");
+                } else {
+                    input.attr("type", "password");
+                    icon.removeClass("fa-eye-slash").addClass("fa-eye");
+                }
+            });
+        });
+    </script>
 
 </body>
 

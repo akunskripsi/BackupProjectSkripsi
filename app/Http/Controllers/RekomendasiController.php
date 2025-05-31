@@ -14,56 +14,49 @@ class RekomendasiController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil ID pembeli dari Rating untuk dropdown
-        $pembeliIds = Rating::select('pembeli_id')
-            ->distinct()
-            ->orderBy('id')
-            ->pluck('pembeli_id')
-            ->toArray();
-
-        // Ambil data pembeli sesuai urutan
-        $pembelis = Pembeli::whereIn('id', $pembeliIds)
-            ->get()
-            ->sortBy(function ($p) use ($pembeliIds) {
-                return array_search($p->id, $pembeliIds);
-            })
-            ->values();
+        $pembeliIds = Rating::select('pembeli_id')->distinct()->orderBy('id')->pluck('pembeli_id')->toArray();
+        $pembelis = Pembeli::whereIn('id', $pembeliIds)->get()
+            ->sortBy(fn($p) => array_search($p->id, $pembeliIds))->values();
 
         $produk = Produk::all();
+        $kategoris = Produk::select('kategori')->distinct()->pluck('kategori')->toArray();
+
         $rekomendasis = collect();
         $similarUsers = collect();
         $selectedUserId = $request->pembeli_id;
+        $selectedKategori = $request->kategori;
 
         if ($selectedUserId) {
             session(['selected_user' => $selectedUserId]);
-
-            // Clear cache untuk pembeli yang dipilih
             Cache::forget('rekomendasi_user_' . $selectedUserId);
             Cache::forget('similar_users_' . $selectedUserId);
 
             $ratings = Rating::all();
             $ratingMatrix = [];
-
             foreach ($ratings as $rating) {
                 $ratingMatrix[$rating->pembeli_id][$rating->produk_id] = $rating->rating;
             }
 
             if (!isset($ratingMatrix[$selectedUserId])) {
                 session()->flash('warning', 'Pembeli ini belum memberikan rating.');
-                return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers'));
+                return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers', 'kategoris', 'selectedKategori'));
             }
 
-            // Hitung rekomendasi tanpa cache untuk memastikan data fresh
-            [$rekomendasis, $similarUsers] = $this->recommendProducts($selectedUserId, $ratingMatrix, $produk);
+            [$rekomendasis, $similarUsers] = $this->recommendProducts($selectedUserId, $ratingMatrix, $produk, 5, $selectedKategori);
         }
 
-        return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers', 'selectedUserId'));
+        return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers', 'selectedUserId', 'kategoris', 'selectedKategori'));
     }
 
 
+
     // Function to recommend products using cosine similarity
-    private function recommendProducts($userId, $ratingMatrix, $produks, $topN = 5)
+    private function recommendProducts($userId, $ratingMatrix, $produks, $topN = 5, $kategori = null)
     {
+        if ($kategori) {
+            $produks = $produks->filter(fn($p) => $p->kategori == $kategori);
+        }
+
         $similarities = [];
         foreach ($ratingMatrix as $otherUserId => $ratings) {
             if ($otherUserId == $userId) continue;
@@ -73,7 +66,6 @@ class RekomendasiController extends Controller
 
         $allPembeli = Pembeli::whereIn('id', array_keys($similarities))->get()->keyBy('id');
 
-        // Similar Users
         $similarUsers = collect();
         foreach ($similarities as $id => $sim) {
             $pembeli = $allPembeli[$id] ?? null;
@@ -86,12 +78,10 @@ class RekomendasiController extends Controller
         }
 
         $similarUsers = $similarUsers->sortByDesc('similarity');
-        //Jika hasil similarUsers semuanya 0 (tidak mirip), tampilkan notifikasi
         if ($similarUsers->where('similarity', '>', 0)->isEmpty()) {
             session()->flash('warning', 'Tidak ditemukan pembeli yang mirip.');
         }
 
-        // Produk yang belum dirating
         $userRated = $ratingMatrix[$userId] ?? [];
         $unratedProducts = $produks->filter(fn($p) => !isset($userRated[$p->id]));
 
@@ -139,17 +129,11 @@ class RekomendasiController extends Controller
         usort($predictions, fn($a, $b) => $b->predicted_rating <=> $a->predicted_rating);
         $rekomendasi = collect(array_slice($predictions, 0, $topN));
 
-        // Tambahkan caching di sini, sebelum return
-        $cacheKey = 'rekomendasi_user_' . $userId;
-        $cacheSimKey = 'similar_users_' . $userId;
-
-        Cache::put($cacheKey, $rekomendasi, now()->addMinutes(10));
-        Cache::put($cacheSimKey, $similarUsers, now()->addMinutes(10));
+        Cache::put('rekomendasi_user_' . $userId, $rekomendasi, now()->addMinutes(10));
+        Cache::put('similar_users_' . $userId, $similarUsers, now()->addMinutes(10));
 
         return [$rekomendasi, $similarUsers];
     }
-
-
 
 
     // Function to calculate cosine similarity

@@ -33,7 +33,7 @@
                 </div>
                 <small class="text-muted">* Format file: .csv atau .xlsx</small>
             </form>
-            <a href="/produk/create" class="btn btn-sm btn-danger shadow-sm ml-2">
+            <a href="/rating/create" class="btn btn-sm btn-danger shadow-sm ml-2">
                 <i class="fas fa-plus fa-sm text-white-50"></i> Tambah
             </a>
         </div>

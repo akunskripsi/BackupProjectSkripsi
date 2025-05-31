@@ -24,6 +24,19 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="form-group mt-3">
+                            <label for="kategori">Pilih Kategori Produk</label>
+                            <select class="form-control" id="kategori" name="kategori" onchange="this.form.submit()">
+                                <option value="">-- Semua Kategori --</option>
+                                @foreach ($kategoris as $kategori)
+                                    <option value="{{ $kategori }}"
+                                        {{ request('kategori') == $kategori ? 'selected' : '' }}>
+                                        {{ $kategori }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </form>
 
                     @if (isset($rekomendasis) && count($rekomendasis) > 0)
@@ -41,6 +54,7 @@
                                         <th>No</th>
                                         <th>Kode Produk</th>
                                         <th>Produk</th>
+                                        <th>Harga</th>
                                         <th>Rating Prediksi</th>
                                         <th class="text-center">Detail</th>
                                     </tr>
@@ -51,6 +65,7 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $item->kode_produk }}</td>
                                             <td>{{ $item->nama }}</td>
+                                            <td>{{ number_format($item->harga, 0, ',', '.') }}</td>
                                             <td>{{ number_format($item->predicted_rating, 4) }}</td>
                                             <td class="text-center">
                                                 <!-- Button untuk collapse detail -->
@@ -62,7 +77,7 @@
                                         </tr>
                                         <tr class="collapse multi-collapse" id="detail-{{ $loop->iteration }}"
                                             data-parent="#accordionPrediksi">
-                                            <td colspan="5">
+                                            <td colspan="6">
                                                 <strong>Perhitungan Prediksi Rating:</strong><br>
                                                 <ul>
                                                     @foreach ($item->details as $d)
