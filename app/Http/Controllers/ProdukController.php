@@ -54,7 +54,6 @@ class ProdukController extends Controller
             'nama_produk' => ['required', 'max:100'],
             'kategori' => ['required', 'max:50'],
             'harga' => ['required', 'max:20'],
-            'stok' => ['required', 'max:10'],
         ]);
 
         Produk::create([
@@ -62,7 +61,6 @@ class ProdukController extends Controller
             'nama_produk' => $validatedData['nama_produk'],
             'kategori' => $validatedData['kategori'],
             'harga' => $validatedData['harga'],
-            'stok' => $validatedData['stok'],
         ]);
 
         return redirect('/produk')->with('success', 'Berhasil menambahkan data');
@@ -86,7 +84,6 @@ class ProdukController extends Controller
             'nama_produk' => ['required', 'max:100'],
             'kategori' => ['required', 'max:50'],
             'harga' => ['required', 'max:20'],
-            'stok' => ['required', 'max:10'],
         ]);
 
         Produk::findOrFail($id)->update($validatedData); // ✅ fix here

@@ -26,17 +26,6 @@
                             @enderror
                         </div>
                         <div class="form-group mb-3">
-                            <label for="email">Email</label>
-                            <input type="text" name="email" id="email"
-                                class="form-control @error('email') is-invalid @enderror"
-                                value="{{ old('email', $pembeli->email) }}">
-                            @error('email')
-                                <span class="invalid-feedback">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-                        <div class="form-group mb-3">
                             <label for="lokasi">Lokasi</label>
                             <input type="text" name="lokasi" id="lokasi"
                                 class="form-control @error('lokasi') is-invalid @enderror"

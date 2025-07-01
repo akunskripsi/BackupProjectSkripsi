@@ -61,6 +61,9 @@
                                         <button type="submit" class="btn btn-danger btn-user btn-block">
                                             Login
                                         </button>
+                                        <div class="text-center">
+                                            <a class="small" href="{{ route('register') }}">Create an Account!</a>
+                                        </div>                                        
                                     </form>
                                     <!-- Optional: Tambahkan link daftar/lupa password jika dibutuhkan -->
                                 </div>

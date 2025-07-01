@@ -18,7 +18,6 @@ class PembeliImport implements ToModel, WithHeadingRow
         return new Pembeli([
             'kode_pembeli' => $row['kode_pembeli'],
             'name' => $row['name'],
-            'email' => $row['email'],
             'lokasi' => $row['lokasi'],
         ]);
     }

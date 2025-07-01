@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('nama_produk',100);
             $table->string('kategori',100);
             $table->string('harga',100);
-            $table->string('stok',10);
             $table->timestamps();
         });
     }

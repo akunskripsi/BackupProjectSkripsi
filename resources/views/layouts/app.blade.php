@@ -112,6 +112,25 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- jQuery dan Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            minimumResultsForSearch: 0, // selalu tampilkan kotak pencarian
+            width: '100%'
+        }).on('select2:open', function () {
+            // Fokus otomatis ke input pencarian saat dropdown dibuka
+            setTimeout(function () {
+                document.querySelector('.select2-container--open .select2-search__field').focus();
+            }, 100);
+        });
+    });
+</script>
+
 </body>
 
 </html>

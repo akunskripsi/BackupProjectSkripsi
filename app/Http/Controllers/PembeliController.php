@@ -17,7 +17,6 @@ class PembeliController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('name', 'like', '%' . $search . '%')
-                ->orWhere('email', 'like', '%' . $search . '%')
                 ->orWhere('lokasi', 'like', '%' . $search . '%');
         }
 
@@ -50,14 +49,12 @@ class PembeliController extends Controller
         $validatedData = $request->validate([
             'kode_pembeli' => 'required|unique:pembelis,kode_pembeli', // Pastikan kode unik
             'name' => ['required', 'max:100'],
-            'email' => ['required', 'max:50'],
             'lokasi' => ['required', 'max:20'],
         ]);
 
         Pembeli::create([
             'kode_pembeli' => $validatedData['kode_pembeli'], // Simpan kode pembeli
             'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
             'lokasi' => $validatedData['lokasi'],
         ]);
 
@@ -78,7 +75,6 @@ class PembeliController extends Controller
     {
         $validatedData = $request->validate([
             'name' => ['required', 'max:100'],
-            'email' => ['required', 'max:50'],
             'lokasi' => ['required', 'max:20'],
         ]);
 

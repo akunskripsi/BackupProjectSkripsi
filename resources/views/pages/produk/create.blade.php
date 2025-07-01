@@ -54,16 +54,6 @@
                                 </span>
                             @enderror
                         </div>
-                        <div class="form-group mb-3">
-                            <label for="stok">Stok</label>
-                            <input type="text" name="stok" id="stok"
-                                class="form-control @error('stok') is-invalid @enderror" value="{{ old('stok') }}">
-                            @error('stok')
-                                <span class="invalid-feedback">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-end" style="gap:10px;">

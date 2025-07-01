@@ -20,7 +20,6 @@ class ProdukImport implements ToModel, WithHeadingRow
             'nama_produk' => $row['nama_produk'],
             'kategori' => $row['kategori'],
             'harga' => preg_replace('/\D/', '', $row['harga']), // hilangkan karakter selain angka
-            'stok' => $row['stok'],
         ]);
     }
 }

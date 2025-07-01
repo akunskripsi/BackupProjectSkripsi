@@ -48,7 +48,7 @@
     <li class="nav-item {{ request()->is('rating*') ? 'active' : '' }}">
         <a class="nav-link" href="/rating">
             <i class="fas fa-fw fa-table"></i>
-            <span>Data Rating/Interaksi Pembeli</span></a>
+            <span>Data Rating</span></a>
     </li>
 
     <!-- Divider -->

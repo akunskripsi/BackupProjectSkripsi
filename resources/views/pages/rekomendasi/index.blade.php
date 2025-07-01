@@ -14,7 +14,8 @@
                     <form method="GET" action="{{ route('rekomendasi.index') }}">
                         <div class="form-group">
                             <label for="pembeli_id">Pilih Pembeli</label>
-                            <select class="form-control" id="pembeli_id" name="pembeli_id" onchange="this.form.submit()">
+                            <select class="form-control select2" id="pembeli_id" name="pembeli_id"
+                                onchange="this.form.submit()">
                                 <option value="">-- Pilih Pembeli --</option>
                                 @foreach ($pembelis as $pembeli)
                                     <option value="{{ $pembeli->id }}"
@@ -27,7 +28,8 @@
 
                         <div class="form-group mt-3">
                             <label for="kategori">Pilih Kategori Produk</label>
-                            <select class="form-control" id="kategori" name="kategori" onchange="this.form.submit()">
+                            <select class="form-control select2" id="kategori" name="kategori"
+                                onchange="this.form.submit()">
                                 <option value="">-- Semua Kategori --</option>
                                 @foreach ($kategoris as $kategori)
                                     <option value="{{ $kategori }}"
@@ -46,38 +48,98 @@
                             </div>
                         @endif
 
-                        <h5 class="mt-4">Daftar Hasil Rekomendasi</h5>
-                        <div id="accordionPrediksi"> {{-- Pembungkus Accordion --}}
-                            <table class="table table-bordered table-hovered">
-                                <thead class="bg-success text-white sticky-top">
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Kode Produk</th>
-                                        <th>Produk</th>
-                                        <th>Harga</th>
-                                        <th>Rating Prediksi</th>
-                                        <th class="text-center">Detail</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($rekomendasis as $item)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $item->kode_produk }}</td>
-                                            <td>{{ $item->nama }}</td>
-                                            <td>{{ number_format($item->harga, 0, ',', '.') }}</td>
-                                            <td>{{ number_format($item->predicted_rating, 4) }}</td>
-                                            <td class="text-center">
-                                                <!-- Button untuk collapse detail -->
-                                                <button class="btn btn-sm btn-secondary" type="button"
-                                                    data-toggle="collapse" data-target="#detail-{{ $loop->iteration }}">
-                                                    <i class="fas fa-search"></i>
-                                                </button>
-                                            </td>
+                        @if (isset($similarUsers) && $similarUsers->count() > 0)
+                            <h5 class="mt-4">Perhitungan Cosine Similarity</h5>
+                            <div style="max-height: 400px; overflow-y: auto;"> <!-- Fitur Scroll -->
+                                <table class="table table-bordered">
+                                    <thead class="bg-danger text-white sticky-top">
+                                        <tr class="text-center">
+                                            <th>No</th>
+                                            <th>Kode Pembeli</th>
+                                            <th>Nama Pembeli</th>
+                                            <th>Skor Cosine Similarity</th>
+                                            <th>Lihat Perhitungan</th>
                                         </tr>
-                                        <tr class="collapse multi-collapse" id="detail-{{ $loop->iteration }}"
-                                            data-parent="#accordionPrediksi">
-                                            <td colspan="6">
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($similarUsers as $sim)
+                                            <tr class="text-center">
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $sim->kode }}</td>
+                                                <td>{{ $sim->nama }}</td>
+                                                <td>{{ $sim->similarity }}</td>
+                                                <td>
+                                                    <a href="{{ route('rekomendasi.show', [
+                                                        'id' => $sim->pembeli_id,
+                                                        'selected' => $pembeliId,
+                                                        'kategori' => request('kategori'),
+                                                    ]) }}"
+                                                        class="btn btn-secondary btn-sm">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div> <!-- End Fitur Scroll -->
+                        @endif
+                    @else
+                        <p class="text-center">Pilih pembeli untuk melihat rekomendasi</p>
+                    @endif
+
+
+                    <h5 class="mt-4">Daftar Hasil Rekomendasi</h5>
+                    <div id="accordionPrediksi"> {{-- Pembungkus Accordion --}}
+                        <table class="table table-bordered table-hovered">
+                            <thead class="bg-success text-white sticky-top">
+                                <tr class="text-center">
+                                    <th>No</th>
+                                    <th>Kode Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th>Harga</th>
+                                    <th>Rating Prediksi</th>
+                                    <th>Detail Perhitungan Rating Prediksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($rekomendasis as $item)
+                                    <tr class="text-center">
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $item->kode_produk }}</td>
+                                        <td>{{ $item->nama }}</td>
+                                        <td>Rp. {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                        <td>{{ number_format($item->predicted_rating, 1) }}</td>
+                                        <td>
+                                            <!-- Button untuk collapse detail -->
+                                            <button class="btn btn-sm btn-secondary" type="button" data-toggle="collapse"
+                                                data-target="#detail-{{ $loop->iteration }}">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="collapse multi-collapse" id="detail-{{ $loop->iteration }}"
+                                        data-parent="#accordionPrediksi">
+                                        <td colspan="6">
+                                            @if ($item->total_similarity == 0 && isset($item->rating_details))
+                                                <strong>Perhitungan Rating Rata-Rata:</strong><br>
+                                                <p>Produk ini memiliki {{ $item->rating_details['count'] }} rating:</p>
+                                                <ul>
+                                                    @foreach ($item->rating_details['ratings'] as $rating)
+                                                        <li>Pembeli {{ $rating->pembeli->name }}: {{ $rating->rating }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                                <p>
+                                                    <strong>Total Rating:</strong>
+                                                    {{ $item->rating_details['total_rating'] }}<br>
+                                                    <strong>Jumlah Rating:</strong>
+                                                    {{ $item->rating_details['count'] }}<br>
+                                                    <strong>Rata-rata:</strong> {{ $item->rating_details['total_rating'] }}
+                                                    ÷ {{ $item->rating_details['count'] }}
+                                                    = {{ number_format($item->rating_details['average'], 4) }}
+                                                </p>
+                                            @else
                                                 <strong>Perhitungan Prediksi Rating:</strong><br>
                                                 <ul>
                                                     @foreach ($item->details as $d)
@@ -110,54 +172,28 @@
                                                     @endphp
                                                     {{ implode(' + ', $similarityParts) }} = {{ $item->total_similarity }}
                                                 </p>
-                                                <p>
-                                                    <strong>Prediksi Rating =</strong>
-                                                    {{ number_format($item->total_weighted, 4) }} ÷
-                                                    {{ number_format($item->total_similarity, 4) }} =
-                                                    {{ number_format($item->predicted_rating, 4) }}
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div> {{-- Tutup accordion --}}
-                    @else
-                        <p class="text-center">Pilih pembeli untuk melihat rekomendasi</p>
-                    @endif
-
-                    @if (isset($similarUsers) && $similarUsers->count() > 0)
-                        <h5 class="mt-4">Daftar Pembeli yang Mirip (Cosine Similarity)</h5>
-                        <div style="max-height: 400px; overflow-y: auto;"> <!-- Fitur Scroll -->
-                            <table class="table table-bordered">
-                                <thead class="bg-danger text-white sticky-top">
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Kode Pembeli</th>
-                                        <th>Nama Pembeli</th>
-                                        <th>Skor Cosine Similarity</th>
-                                        <th class="text-center">Lihat Perhitungan</th>
+                                                @if ($item->total_similarity == 0)
+                                                    <p><strong>Prediksi Rating menggunakan rata-rata semua rating produk
+                                                            ini</strong></p>
+                                                    <p>
+                                                        Rata-rata rating produk =
+                                                        {{ number_format($item->predicted_rating, 4) }}
+                                                    </p>
+                                                @else
+                                                    <p>
+                                                        <strong>Prediksi Rating =</strong>
+                                                        {{ number_format($item->total_weighted, 4) }} ÷
+                                                        {{ number_format($item->total_similarity, 4) }} =
+                                                        {{ number_format($item->predicted_rating, 4) }}
+                                                    </p>
+                                                @endif
+                                            @endif
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($similarUsers as $sim)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>{{ $sim->kode }}</td>
-                                            <td>{{ $sim->nama }}</td>
-                                            <td>{{ $sim->similarity }}</td>
-                                            <td class="text-center">
-                                                <a href="{{ route('rekomendasi.show', ['id' => $sim->pembeli_id]) }}"
-                                                    class="btn btn-secondary btn-sm">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div> <!-- End Fitur Scroll -->
-                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div> {{-- Tutup accordion --}}
                 </div>
             </div>
         </div>

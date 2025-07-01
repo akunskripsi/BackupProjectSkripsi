@@ -1,45 +1,79 @@
 @extends('layouts.app')
 
 @section('content')
-    <!-- notifikasi berhasil dan eror -->
+    <style>
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        .sticky-top {
+            top: 0;
+            z-index: 100;
+        }
+    </style>
+
+    {{-- Alert Notifikasi --}}
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show fade-in" role="alert">
             {{ session('success') }}
-            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">&times;</span></button>
         </div>
     @endif
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show fade-in" role="alert">
             {{ session('error') }}
-            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">&times;</span></button>
         </div>
     @endif
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 text-gray-800">Data Rating</h1>
+    <!-- Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4 fade-in">
+        <h1 class="h3 text-gray-800">
+            Data Rating
+        </h1>
         <div class="d-flex align-items-center">
+            @if (Auth::user()->role_id == 1)
             <form action="{{ url('/rating/import') }}" method="POST" enctype="multipart/form-data"
                 class="mr-2 d-flex flex-column align-items-start">
                 @csrf
-                <div class="d-flex align-items-center">
-                    <input type="file" name="file" class="form-control-file mr-2" accept=".csv,.xlsx" required>
-                    <button type="submit" class="btn btn-sm btn-primary mr-2">
-                        <i class="fas fa-file-import"></i> Import
-                    </button>
-                </div>
-                <small class="text-muted">* Format file: .csv atau .xlsx</small>
+                    <div class="d-flex align-items-center">
+                        <input type="file" name="file" class="form-control-file mr-2" accept=".csv,.xlsx" required>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fas fa-file-import"></i> Import
+                        </button>
+                    </div>
+                    <small class="text-muted mt-1">* Format file: .csv atau .xlsx</small>
             </form>
-            <a href="/rating/create" class="btn btn-sm btn-danger shadow-sm ml-2">
-                <i class="fas fa-plus fa-sm text-white-50"></i> Tambah
-            </a>
+            @endif
+            @if (Auth::user()->role_id == 2)
+                <a href="/rating/create" class="btn btn-sm btn-danger shadow-sm ml-2">
+                    <i class="fas fa-plus"></i> Tambah
+                </a>
+            @endif
         </div>
     </div>
 
-    <div class="row">
+    <!-- Tabel Rating -->
+    <div class="row fade-in">
         <div class="col">
             <div class="card shadow">
                 <div class="card-body">
@@ -55,66 +89,67 @@
                         </div>
                     </form>
 
-                    {{-- Notifikasi hasil pencarian --}}
                     @if (request('search'))
-                        <div class="alert alert-info">
+                        <div class="alert alert-info fade-in">
                             Ditemukan {{ count($pembelis) }} pembeli untuk pencarian:
                             <strong>{{ request('search') }}</strong>
                         </div>
                     @endif
 
-
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle text-nowrap">
-                            <thead class="bg-primary text-white">
+                    <div class="table-responsive" style="max-height: 700px; overflow-y:auto;">
+                        <table class="table table-bordered table-hover table-striped text-center align-middle text-nowrap">
+                            <thead class="bg-primary text-white sticky-top">
                                 <tr>
                                     <th>No</th>
                                     <th>Nama Pembeli</th>
                                     @foreach ($produks as $produk_nama)
                                         <th>{{ $produk_nama }}</th>
                                     @endforeach
-                                    <th>Action</th>
+                                    @if (Auth::user()->role_id == 2)
+                                        <th>Aksi</th>
+                                    @endif
                                 </tr>
                             </thead>
-                            <tbody class="text-center fw-bold" style="color: #000; background-color: #fff;">
+                            <tbody class="fw-bold">
                                 @forelse ($pembelis as $pembeli_id => $nama_pembeli)
                                     <tr>
                                         <td>{{ $loop->iteration + ($pembelis->currentPage() - 1) * $pembelis->perPage() }}
                                         </td>
                                         <td>{{ $nama_pembeli }}</td>
                                         @foreach ($produks as $produk_id => $produk_nama)
-                                            <td>
-                                                {{ $ratingMatrix[$pembeli_id][$produk_id] ?? '-' }}
-                                            </td>
+                                            <td>{{ $ratingMatrix[$pembeli_id][$produk_id] ?? '-' }}</td>
                                         @endforeach
-                                        <td>
-                                            <button class="d-inline-block mr-2 btn btn-sm btn-warning"
-                                                data-bs-toggle="modal" data-bs-target="#editModal"
-                                                data-id="{{ $pembeli_id }}" data-nama="{{ $nama_pembeli }}"
-                                                data-rating='@json($ratingMatrix[$pembeli_id] ?? [])'>
-                                                <i class="fas fa-pen"></i></button>
-
-                                            <form action="{{ url('/rating/' . $pembeli_id) }}" method="POST"
-                                                class="d-inline"
-                                                onsubmit="return confirm('Yakin ingin menghapus data ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger"><i
-                                                        class="fas fa-eraser"></i></button>
-                                            </form>
-
-                                        </td>
+                                        @if (Auth::user()->role_id == 2)
+                                            <td>
+                                                <button class="btn btn-sm btn-warning mr-1" data-bs-toggle="modal"
+                                                    data-bs-target="#editModal" data-id="{{ $pembeli_id }}"
+                                                    data-nama="{{ $nama_pembeli }}"
+                                                    data-rating='@json($ratingMatrix[$pembeli_id] ?? [])'>
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+                                                <form action="{{ url('/rating/' . $pembeli_id) }}" method="POST"
+                                                    class="d-inline"
+                                                    onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-eraser"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        @endif
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ 2 + count($produks) }}" style="text-align: left;">
-                                            Tidak ada data rating ditemukan.
-                                        </td>
+                                        <td colspan="{{ 2 + count($produks) }}" class="text-left">Tidak ada data rating
+                                            ditemukan.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Pagination -->
                     <div class="mt-3">
                         {{ $pembelis->appends(request()->query())->links() }}
                     </div>
@@ -122,7 +157,8 @@
             </div>
         </div>
     </div>
-    <!-- Modal Edit Pembeli + Rating -->
+
+    <!-- Modal Edit -->
     <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <form id="formEdit" method="POST">
@@ -131,23 +167,21 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Edit Pembeli dan Rating</h5>
-                        <button type="button" class="btn btn-sm btn-light rounded-circle" data-bs-dismiss="modal"
-                            aria-label="Close">
+                        <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal" aria-label="Close">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="pembeli_id" id="edit-id">
                         <div class="mb-3">
-                            <label for="edit-nama" class="form-label">Nama Pembeli</label>
+                            <label for="edit-nama">Nama Pembeli</label>
                             <input type="text" class="form-control" id="edit-nama" name="nama">
                         </div>
-
                         <div class="mb-3">
-                            <label class="form-label">Rating Produk</label>
+                            <label>Rating Produk</label>
                             <div class="row">
                                 @foreach ($produks as $produk_id => $produk_nama)
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mb-2">
                                         <label>{{ $produk_nama }}</label>
                                         <input type="number" min="1" max="5"
                                             class="form-control rating-input" name="ratings[{{ $produk_id }}]"
@@ -165,7 +199,7 @@
         </div>
     </div>
 
-
+    <!-- Script Modal Logic -->
     <script>
         const editModal = document.getElementById('editModal');
         editModal.addEventListener('show.bs.modal', function(event) {
@@ -177,14 +211,17 @@
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-nama').value = nama;
 
-            // Isi nilai rating tiap input
             document.querySelectorAll('.rating-input').forEach(input => {
                 const produkId = input.dataset.produkId;
                 input.value = ratings[produkId] ?? '';
             });
 
-            // Atur URL action
             document.getElementById('formEdit').action = `/rating/${id}`;
         });
+
+        // Auto-dismiss alert
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(el => el.classList.remove('show'));
+        }, 4000);
     </script>
 @endsection

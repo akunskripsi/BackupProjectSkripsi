@@ -3,13 +3,31 @@
 @section('content')
     <div class="container">
         <h3>Detail Perhitungan Cosine Similarity</h3>
+
         <style>
+            /* Table nowrap */
             table th,
             table td {
                 white-space: nowrap;
             }
+
+            /* Animasi fade-in dan slide down */
+            .fade-in-slide {
+                opacity: 0;
+                transform: translateY(-20px);
+                animation: fadeSlideDown 0.8s ease forwards;
+            }
+
+            @keyframes fadeSlideDown {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         </style>
-        <table class="table table-bordered">
+
+        <!-- Tabel dengan animasi -->
+        <table class="table table-bordered fade-in-slide">
             <thead class="thead-dark">
                 <tr>
                     <th>No</th>
@@ -58,6 +76,12 @@
         <p><strong>Cosine Similarity:</strong> {{ $dotProduct }} / ({{ round($magnitudeA, 4) }} ×
             {{ round($magnitudeB, 4) }}) = {{ round($similarity, 4) }}</p>
 
-        <a href="{{ route('rekomendasi.index') }}" class="btn btn-secondary mt-3">Kembali</a>
+            <a href="{{ route('rekomendasi.index', [
+    'pembeli_id' => $selectedUserId,
+    'kategori' => $kategori
+]) }}" class="btn btn-secondary mt-3">
+    Kembali
+</a>
+             
     </div>
 @endsection

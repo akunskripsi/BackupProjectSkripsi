@@ -14,8 +14,8 @@
                     <div class="card-body">
                         <div class="form-group mb-3">
                             <label for="pembeli_id">Nama Pembeli</label>
-                            <select name="pembeli_id" id="pembeli_id"
-                                class="form-control @error('pembeli_id') is-invalid @enderror">
+                            <select class="form-control select2" name="pembeli_id" id="pembeli_id" onchange="this.form.submit()"
+                                @error('pembeli_id') is-invalid @enderror">
                                 <option value="">-- Pilih Pembeli --</option>
                                 @foreach ($pembelis as $pembeli)
                                     <option value="{{ $pembeli->id }}"
@@ -33,8 +33,8 @@
 
                         <div class="form-group mb-3">
                             <label for="produk_id">Nama Produk</label>
-                            <select name="produk_id" id="produk_id"
-                                class="form-control @error('produk_id') is-invalid @enderror">
+                            <select class="form-control select2" name="produk_id" id="produk_id"
+                            onchange="this.form.submit()" @error('produk_id') is-invalid @enderror">
                                 <option value="">-- Pilih Produk --</option>
                                 @foreach ($produks as $produk)
                                     <option value="{{ $produk->id }}"

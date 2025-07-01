@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('kode_pembeli',100);
             $table->string('name',100);
-            $table->string('email',60);
             $table->string('lokasi',100);
             $table->timestamps();
         });

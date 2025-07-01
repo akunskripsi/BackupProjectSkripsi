@@ -14,38 +14,68 @@ class RekomendasiController extends Controller
 {
     public function index(Request $request)
     {
-        $pembeliIds = Rating::select('pembeli_id')->distinct()->orderBy('id')->pluck('pembeli_id')->toArray();
-        $pembelis = Pembeli::whereIn('id', $pembeliIds)->get()
-            ->sortBy(fn($p) => array_search($p->id, $pembeliIds))->values();
+        $pembeliId = $request->input('pembeli_id');
+        $kategori = $request->input('kategori');
 
-        $produk = Produk::all();
-        $kategoris = Produk::select('kategori')->distinct()->pluck('kategori')->toArray();
+        $pembelis = Pembeli::all();
+        $kategoris = Produk::distinct()->pluck('kategori');
 
-        $rekomendasis = collect();
+        $rekomendasis = [];
+        $notifikasi = null;
         $similarUsers = collect();
-        $selectedUserId = $request->pembeli_id;
-        $selectedKategori = $request->kategori;
+        $ratingDetails = []; // Tambahkan ini untuk menyimpan detail perhitungan
 
-        if ($selectedUserId) {
-            session(['selected_user' => $selectedUserId]);
-            Cache::forget('rekomendasi_user_' . $selectedUserId);
-            Cache::forget('similar_users_' . $selectedUserId);
-
-            $ratings = Rating::all();
-            $ratingMatrix = [];
-            foreach ($ratings as $rating) {
-                $ratingMatrix[$rating->pembeli_id][$rating->produk_id] = $rating->rating;
+        if ($pembeliId) {
+            $produkQuery = Produk::query();
+            if ($kategori) {
+                $produkQuery->where('kategori', $kategori);
             }
+            $produkList = $produkQuery->get();
 
-            if (!isset($ratingMatrix[$selectedUserId])) {
-                session()->flash('warning', 'Pembeli ini belum memberikan rating.');
-                return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers', 'kategoris', 'selectedKategori'));
+            $ratings = Rating::where('pembeli_id', $pembeliId)->get();
+
+            if ($ratings->isEmpty()) {
+                // Belum punya rating → tampilkan produk berdasarkan rating rata-rata
+                $rekomendasis = $produkList->map(function ($produk) use (&$ratingDetails) {
+                    $ratings = $produk->ratings()->get();
+                    $avgRating = $ratings->avg('rating');
+
+                    // Simpan detail perhitungan
+                    $ratingDetails[$produk->id] = [
+                        'ratings' => $ratings,
+                        'total_rating' => $ratings->sum('rating'),
+                        'count' => $ratings->count(),
+                        'average' => $avgRating ?? 0
+                    ];
+
+                    return (object)[
+                        'kode_produk' => $produk->kode_produk,
+                        'nama' => $produk->nama_produk,
+                        'harga' => $produk->harga,
+                        'predicted_rating' => number_format($avgRating ?? 0, 4),
+                        'details' => [],
+                        'total_weighted' => 0,
+                        'total_similarity' => 0,
+                        'rating_details' => $ratingDetails[$produk->id] // Tambahkan detail perhitungan
+                    ];
+                })->sortByDesc('predicted_rating')->values();
+
+                $notifikasi = "Pembeli belum pernah memberi rating. Menampilkan rekomendasi berdasarkan rating rata-rata produk.";
+            } else {
+                $rekomendasis = $this->generateRecommendations($pembeliId, $kategori);
+                $similarUsers = $this->getSimilarUsers($pembeliId);
             }
-
-            [$rekomendasis, $similarUsers] = $this->recommendProducts($selectedUserId, $ratingMatrix, $produk, 5, $selectedKategori);
         }
 
-        return view('pages.rekomendasi.index', compact('pembelis', 'produk', 'rekomendasis', 'similarUsers', 'selectedUserId', 'kategoris', 'selectedKategori'));
+        return view('pages.rekomendasi.index', compact(
+            'pembelis',
+            'kategoris',
+            'rekomendasis',
+            'similarUsers',
+            'notifikasi',
+            'pembeliId',
+            'ratingDetails' // Kirim ke view
+        ));
     }
 
 
@@ -159,13 +189,38 @@ class RekomendasiController extends Controller
         return $dotProduct / (sqrt($magnitudeA) * sqrt($magnitudeB));
     }
 
-    public function show($id)
+    private function generateRecommendations($pembeliId, $kategori = null)
     {
-        $pembeliTerpilih = session('selected_user');
+        // Ambil semua rating
+        $ratings = Rating::all();
+
+        // Bangun rating matrix: pembeli_id => [produk_id => rating]
+        $ratingMatrix = [];
+        foreach ($ratings as $rating) {
+            $ratingMatrix[$rating->pembeli_id][$rating->produk_id] = $rating->rating;
+        }
+
+        // Ambil semua produk
+        $produks = Produk::all();
+
+        // Panggil fungsi rekomendasi
+        [$rekomendasi, $similarUsers] = $this->recommendProducts($pembeliId, $ratingMatrix, $produks, 10, $kategori);
+
+        return $rekomendasi;
+    }
+
+    private function getSimilarUsers($pembeliId)
+    {
+        return Cache::get('similar_users_' . $pembeliId, collect());
+    }
+
+
+    public function show(Request $request, $id, $selected = null)
+    {
+        $pembeliTerpilih = $selected; // ambil dari URL segment, bukan query
 
         $targetUserId = $id;
 
-        // Ambil semua rating
         $ratings = Rating::all();
         $ratingMatrix = [];
 
@@ -173,7 +228,7 @@ class RekomendasiController extends Controller
             $ratingMatrix[$rating->pembeli_id][$rating->produk_id] = $rating->rating;
         }
 
-        if (!$pembeliTerpilih) {
+        if (!$pembeliTerpilih || !isset($ratingMatrix[$pembeliTerpilih])) {
             return redirect()->route('rekomendasi.index')->with('warning', 'Silakan pilih pembeli terlebih dahulu.');
         }
 
@@ -196,7 +251,7 @@ class RekomendasiController extends Controller
 
             $produk = Produk::find($key);
             $details[] = [
-                'produk_id' => $key,
+                'produk_id' => $produk?->kode_produk ?? $key,
                 'nama_produk' => $produk?->nama_produk ?? 'Tidak Diketahui',
                 'rating_A' => $a,
                 'rating_B' => $b,
@@ -214,9 +269,13 @@ class RekomendasiController extends Controller
             'dotProduct' => $dotProduct,
             'magnitudeA' => sqrt($magnitudeA),
             'magnitudeB' => sqrt($magnitudeB),
-            'similarity' => $similarity
+            'similarity' => $similarity,
+            'selectedUserId' => $pembeliTerpilih,
+            'kategori' => $request->query('kategori', null), // TAMBAH INI
         ]);
     }
+
+
 
     public function create()
     {
