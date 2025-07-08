@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin Toko Surya Elektrik',
                 'password' => Hash::make('adminadmin'),
-                'status' => 'approved',
+                // 'status' => 'approved',
                 'role_id' => 1,
             ]
         );
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'User Biasa',
                 'password' => Hash::make('useruser'),
-                'status' => 'approved',
+                // 'status' => 'approved',
                 'role_id' => 2,
             ]
         );

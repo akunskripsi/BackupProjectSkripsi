@@ -3,23 +3,31 @@
 namespace App\Imports;
 
 use App\Models\Produk;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class ProdukImport implements ToModel, WithHeadingRow
+class ProdukImport implements ToCollection, WithHeadingRow
 {
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    public $errors = [];
+
+    public function collection(Collection $rows)
     {
-        return new Produk([
-            'kode_produk' => $row['kode_produk'],
-            'nama_produk' => $row['nama_produk'],
-            'kategori' => $row['kategori'],
-            'harga' => preg_replace('/\D/', '', $row['harga']), // hilangkan karakter selain angka
-        ]);
+        foreach ($rows as $row) {
+            // Cek apakah kode_produk sudah ada
+            $exists = Produk::where('kode_produk', $row['kode_produk'])->first();
+
+            if ($exists) {
+                $this->errors[] = $row['kode_produk'];
+                continue;
+            }
+
+            Produk::create([
+                'kode_produk' => $row['kode_produk'],
+                'nama_produk' => $row['nama_produk'],
+                'kategori' => $row['kategori'],
+                'harga' => preg_replace('/\D/', '', $row['harga']),
+            ]);
+        }
     }
 }

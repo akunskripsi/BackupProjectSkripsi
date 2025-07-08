@@ -52,9 +52,9 @@
         </h1>
         <div class="d-flex align-items-center">
             @if (Auth::user()->role_id == 1)
-            <form action="{{ url('/rating/import') }}" method="POST" enctype="multipart/form-data"
-                class="mr-2 d-flex flex-column align-items-start">
-                @csrf
+                <form id="form-import" action="{{ url('/rating/import') }}" method="POST" enctype="multipart/form-data"
+                    class="mr-2 d-flex flex-column align-items-start">
+                    @csrf
                     <div class="d-flex align-items-center">
                         <input type="file" name="file" class="form-control-file mr-2" accept=".csv,.xlsx" required>
                         <button type="submit" class="btn btn-sm btn-primary">
@@ -62,7 +62,13 @@
                         </button>
                     </div>
                     <small class="text-muted mt-1">* Format file: .csv atau .xlsx</small>
-            </form>
+                    <div class="progress mt-2 w-100" style="height: 20px; display: none;" id="progress-container">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
+                            style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                            Mengimpor data...
+                        </div>
+                    </div>
+                </form>
             @endif
             @if (Auth::user()->role_id == 2)
                 <a href="/rating/create" class="btn btn-sm btn-danger shadow-sm ml-2">
@@ -223,5 +229,24 @@
         setTimeout(() => {
             document.querySelectorAll('.alert').forEach(el => el.classList.remove('show'));
         }, 4000);
+    </script>
+
+    <!-- Auto hide alert -->
+    <script>
+        setTimeout(() => {
+            let alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 4000);
+    </script>
+
+    <script>
+        // Saat form import dikirim, tampilkan progress bar
+        document.getElementById('form-import').addEventListener('submit', function() {
+            document.getElementById('progress-container').style.display = 'block';
+        });
     </script>
 @endsection

@@ -107,7 +107,14 @@ class ProdukController extends Controller
         ]);
 
         try {
-            Excel::import(new ProdukImport, $request->file('file'));
+            $import = new ProdukImport;
+            Excel::import($import, $request->file('file'));
+
+            if (count($import->errors) > 0) {
+                $duplikat = implode(', ', $import->errors);
+                return redirect('/produk')->with('error', 'Beberapa data tidak diimport karena kode sudah ada: ' . $duplikat);
+            }
+
             return redirect('/produk')->with('success', 'Data produk berhasil diimport.');
         } catch (\Exception $e) {
             return redirect('/produk')->with('error', 'Gagal import: ' . $e->getMessage());

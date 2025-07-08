@@ -148,7 +148,14 @@ class RatingController extends Controller
         ]);
 
         try {
-            Excel::import(new RatingImport, $request->file('file'));
+            $import = new RatingImport;
+            Excel::import($import, $request->file('file'));
+
+            if (count($import->errors) > 0) {
+                $duplikat = implode(', ', $import->errors);
+                return redirect('/rating')->with('error', 'Beberapa data tidak diimport karena sudah ada: ' . $duplikat);
+            }
+
             return redirect('/rating')->with('success', 'Data rating berhasil diimport.');
         } catch (\Exception $e) {
             return redirect('/rating')->with('error', 'Gagal import: ' . $e->getMessage());

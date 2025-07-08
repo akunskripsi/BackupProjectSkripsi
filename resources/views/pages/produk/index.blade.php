@@ -54,7 +54,7 @@
         </h1>
         <div class="d-flex align-items-center">
             @if (Auth::user()->role_id == 1)
-                <form action="{{ url('/produk/import') }}" method="POST" enctype="multipart/form-data"
+                <form id="form-import" action="{{ url('/produk/import') }}" method="POST" enctype="multipart/form-data"
                     class="mr-2 d-flex flex-column align-items-start">
                     @csrf
                     <div class="d-flex align-items-center">
@@ -64,6 +64,12 @@
                         </button>
                     </div>
                     <small class="text-muted mt-1">* Format: .csv atau .xlsx</small>
+                    <div class="progress mt-2 w-100" style="height: 20px; display: none;" id="progress-container">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
+                            style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                            Mengimpor data...
+                        </div>
+                    </div>
                 </form>
                 <a href="/produk/create" class="btn btn-sm btn-danger shadow-sm ml-3">
                     <i class="fas fa-plus"></i> Tambah
@@ -164,4 +170,12 @@
             });
         }, 4000);
     </script>
+
+<script>
+    // Saat form import dikirim, tampilkan progress bar
+    document.getElementById('form-import').addEventListener('submit', function () {
+        document.getElementById('progress-container').style.display = 'block';
+    });
+</script>
+
 @endsection

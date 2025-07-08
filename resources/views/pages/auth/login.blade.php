@@ -5,18 +5,14 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
     <title>Toko Surya Elektrik - Login</title>
 
     <!-- Font Awesome -->
-    <link href="{{ asset('template/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('template/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,700,800,900" rel="stylesheet">
     <link href="{{ asset('template/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="icon" href="{{ asset('template/img/ICON-TAB.png') }}" type="image/jpeg">
 
-    <!-- Tambahan CSS untuk icon -->
     <style>
         .toggle-password {
             position: absolute;
@@ -50,22 +46,28 @@
                                         @csrf
                                         @method('POST')
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user"
-                                                id="InputEmail" name="email" placeholder="Enter Email Address...">
+                                            <input type="email" class="form-control form-control-user" id="InputEmail"
+                                                name="email" placeholder="Enter Email Address..." required>
                                         </div>
                                         <div class="form-group position-relative">
                                             <input type="password" class="form-control form-control-user"
-                                                id="InputPassword" name="password" placeholder="Password">
+                                                id="InputPassword" name="password" placeholder="Password" required>
                                             <span toggle="#InputPassword" class="fas fa-eye toggle-password"></span>
                                         </div>
                                         <button type="submit" class="btn btn-danger btn-user btn-block">
                                             Login
                                         </button>
-                                        <div class="text-center">
+                                        <div class="text-center mt-3">
                                             <a class="small" href="{{ route('register') }}">Create an Account!</a>
-                                        </div>                                        
+                                        </div>
                                     </form>
-                                    <!-- Optional: Tambahkan link daftar/lupa password jika dibutuhkan -->
+
+                                    {{-- Pesan error biasa (jika selain error "belum terdaftar") --}}
+                                    @if ($errors->any() && !str_contains($errors->first('email'), 'belum terdaftar'))
+                                        <div class="alert alert-danger mt-3" role="alert">
+                                            {{ $errors->first('email') }}
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -75,13 +77,35 @@
         </div>
     </div>
 
-    <!-- JS -->
+    <!-- Modal Akun Tidak Terdaftar -->
+    <div class="modal fade" id="modalAkunTidakTerdaftar" tabindex="-1" role="dialog" aria-labelledby="modalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalLabel">Login Gagal</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Akun dengan email tersebut belum terdaftar. Silakan periksa kembali atau daftar terlebih dahulu.
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('register') }}" class="btn btn-primary">Daftar Sekarang</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
     <script src="{{ asset('template/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('template/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('template/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('template/js/sb-admin-2.min.js') }}"></script>
 
-    <!-- Script toggle password -->
+    <!-- Toggle password -->
     <script>
         $(document).ready(function () {
             $(".toggle-password").click(function () {
@@ -95,6 +119,11 @@
                     icon.removeClass("fa-eye-slash").addClass("fa-eye");
                 }
             });
+
+            // Cek jika error karena akun belum terdaftar
+            @if (session()->has('errors') && strpos($errors->first('email'), 'belum terdaftar') !== false)
+                $('#modalAkunTidakTerdaftar').modal('show');
+            @endif
         });
     </script>
 

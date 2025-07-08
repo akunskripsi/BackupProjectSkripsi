@@ -14,9 +14,11 @@ return new class extends Migration
     {
         Schema::create('rekomendasis', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_pembeli', 100); // kolom relasi ke pembelis
-            $table->string('kode_produk', 100);  // kolom relasi ke produks
-            $table->float('nilai_rekomendasi')->nullable(); // bisa digunakan untuk bobot/nilai
+            $table->unsignedBigInteger('pembeli_id'); // Tambahkan ini
+            $table->string('kode_produk', 100);
+            $table->string('nama_produk', 100);
+            $table->string('harga', 100);
+            $table->string('rating_prediksi', 100);
             $table->timestamps();
         });
     }

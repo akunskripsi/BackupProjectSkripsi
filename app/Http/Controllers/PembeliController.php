@@ -99,6 +99,13 @@ class PembeliController extends Controller
 
         try {
             Excel::import(new PembeliImport, $request->file('file'));
+
+            // Cek session apakah ada data duplikat
+            if (session()->has('duplicate_data')) {
+                $duplicates = implode(', ', session('duplicate_data'));
+                return redirect('/pembeli')->with('error', 'Data tidak diimport karena sudah ada: ' . $duplicates);
+            }
+
             return redirect('/pembeli')->with('success', 'Data Pembeli berhasil diimport.');
         } catch (\Exception $e) {
             return redirect('/pembeli')->with('error', 'Gagal import: ' . $e->getMessage());

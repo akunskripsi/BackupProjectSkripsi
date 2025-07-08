@@ -21,11 +21,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            // $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('status',['submitted','approved','rejected'])->default('submitted');
+            // $table->enum('status',['submitted','approved','rejected'])->default('submitted');
             $table->unsignedBigInteger('role_id');
-            $table->rememberToken();
+            // $table->rememberToken();
             $table->timestamps();
 
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');

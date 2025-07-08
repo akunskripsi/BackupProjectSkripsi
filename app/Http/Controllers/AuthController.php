@@ -23,22 +23,33 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        // Cek apakah user dengan email tersebut ada
+        $user = \App\Models\User::where('email', $credentials['email'])->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'email' => 'Akun dengan email tersebut belum terdaftar.',
+            ]);
+        }
+
+        // Coba autentikasi jika user ditemukan
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            $user = Auth::user();
-
+            // Tambahan validasi status akun
             if ($user->status == 'submitted') {
+                Auth::logout(); // Logout langsung jika status belum aktif
                 return back()->withErrors([
                     'email' => 'Akun anda masih menunggu persetujuan admin',
                 ]);
             } elseif ($user->status == 'rejected') {
+                Auth::logout(); // Logout juga
                 return back()->withErrors([
                     'email' => 'Akun anda telah ditolak admin',
                 ]);
             }
 
-            return redirect('/dashboard'); // Ini biar semua role masuk ke dashboard
+            return redirect('/dashboard');
         }
 
         return back()->withErrors([

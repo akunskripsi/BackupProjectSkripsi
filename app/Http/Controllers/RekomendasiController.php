@@ -194,7 +194,7 @@ class RekomendasiController extends Controller
         // Ambil semua rating
         $ratings = Rating::all();
 
-        // Bangun rating matrix: pembeli_id => [produk_id => rating]
+        // Bangun rating matrix
         $ratingMatrix = [];
         foreach ($ratings as $rating) {
             $ratingMatrix[$rating->pembeli_id][$rating->produk_id] = $rating->rating;
@@ -203,11 +203,26 @@ class RekomendasiController extends Controller
         // Ambil semua produk
         $produks = Produk::all();
 
-        // Panggil fungsi rekomendasi
+        // Dapatkan rekomendasi
         [$rekomendasi, $similarUsers] = $this->recommendProducts($pembeliId, $ratingMatrix, $produks, 10, $kategori);
+
+        // Hapus data rekomendasi lama untuk pembeli ini (biar tidak dobel)
+        Rekomendasi::where('pembeli_id', $pembeliId)->delete();
+
+        // Simpan hasil rekomendasi ke tabel
+        foreach ($rekomendasi as $item) {
+            Rekomendasi::create([
+                'pembeli_id' => $pembeliId,
+                'kode_produk' => $item->kode_produk,
+                'nama_produk' => $item->nama,
+                'harga' => $item->harga,
+                'rating_prediksi' => number_format($item->predicted_rating, 4),
+            ]);
+        }
 
         return $rekomendasi;
     }
+
 
     private function getSimilarUsers($pembeliId)
     {
