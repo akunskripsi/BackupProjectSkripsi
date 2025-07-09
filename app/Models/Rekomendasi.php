@@ -16,4 +16,8 @@ class Rekomendasi extends Model
         'harga',
         'rating_prediksi',
     ];
+    public function pembeli()
+    {
+        return $this->belongsTo(Pembeli::class);
+    }
 }

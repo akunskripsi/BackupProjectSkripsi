@@ -87,3 +87,5 @@ Route::get('/about', function () {
 Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+
+Route::get('/rekomendasi/export', [RekomendasiController::class, 'export'])->name('rekomendasi.export');

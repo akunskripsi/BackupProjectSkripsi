@@ -88,6 +88,12 @@
                         <p class="text-center">Pilih pembeli untuk melihat rekomendasi</p>
                     @endif
 
+                    <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                        <a href="{{ route('rekomendasi.export', ['pembeli_id' => request('pembeli_id'), 'kategori' => request('kategori')]) }}"
+                            class="btn btn-success btn-sm">
+                            <i class="fas fa-file-excel"></i> Ekspor Excel
+                        </a>
+                    </div>
 
                     <h5 class="mt-4">Daftar Hasil Rekomendasi</h5>
                     <div id="accordionPrediksi"> {{-- Pembungkus Accordion --}}

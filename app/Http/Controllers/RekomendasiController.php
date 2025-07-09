@@ -9,6 +9,9 @@ use App\Models\Pembeli;
 use App\Models\Produk;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache; // Tambahkan
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RekomendasiExport;
+use Illuminate\Support\Facades\Response;
 
 class RekomendasiController extends Controller
 {
@@ -304,4 +307,14 @@ class RekomendasiController extends Controller
     public function update(Request $request, $id) {}
 
     public function destroy($id) {}
+
+    public function export(Request $request)
+    {
+        $pembeliId = $request->input('pembeli_id');
+        $kategori = $request->input('kategori');
+
+        $filename = 'rekomendasi_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new RekomendasiExport($pembeliId, $kategori), $filename);
+    }
 }
