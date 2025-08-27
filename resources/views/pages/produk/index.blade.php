@@ -63,12 +63,12 @@
                             <i class="fas fa-file-import"></i> Import
                         </button>
                     </div>
-                    <small class="text-muted mt-1">* Format: .csv atau .xlsx</small>
-                    <div class="progress mt-2 w-100" style="height: 20px; display: none;" id="progress-container">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
-                            style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                            Mengimpor data...
+                    <small class="text-muted mt-1">* Format: .xlsx</small>
+                    <div id="progress-container" class="mt-2 w-100" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Mengimpor data...</span>
                         </div>
+                        <span class="ml-2">Mengimpor data...</span>
                     </div>
                 </form>
                 <a href="/produk/create" class="btn btn-sm btn-danger shadow-sm ml-3">

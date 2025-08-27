@@ -66,14 +66,19 @@
                             <i class="fas fa-file-import"></i> Import
                         </button>
                     </div>
-                    <small class="text-muted mt-1">* Format file: .csv atau .xlsx</small>
-                    <div class="progress mt-2 w-100" style="height: 20px; display: none;" id="progress-container">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
-                            role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0"
-                            aria-valuemax="100">
+                    <small class="text-muted mt-1">* Format file: .xlsx</small>
+                    {{-- <div class="progress mt-2 w-100" style="height: 20px; display: none;" id="progress-container">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
+                            style="width: 10%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
                             Mengimpor data...
                         </div>
-                    </div>                    
+                    </div> --}}
+                    <div id="progress-container" class="mt-2 w-100" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Mengimpor data...</span>
+                        </div>
+                        <span class="ml-2">Mengimpor data...</span>
+                    </div>
                 </form>
             @endif
             <a href="/pembeli/create" class="btn btn-sm btn-danger shadow-sm ml-3">
@@ -173,11 +178,11 @@
         }, 4000);
     </script>
 
-<script>
-    // Saat form import dikirim, tampilkan progress bar
-    document.getElementById('form-import').addEventListener('submit', function () {
-        document.getElementById('progress-container').style.display = 'block';
-    });
-</script>
+    <script>
+        // Saat form import dikirim, tampilkan progress bar
+        document.getElementById('form-import').addEventListener('submit', function() {
+            document.getElementById('progress-container').style.display = 'block';
+        });
+    </script>
 
 @endsection
